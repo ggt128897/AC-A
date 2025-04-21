@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>AC/A 比率計算器</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f7f7f7; }
+        h2 { color: #333; }
+        input, button { padding: 10px; font-size: 16px; margin: 8px 0; width: 100%; }
+        button { background: #0066cc; color: white; border: none; }
+        .result { margin-top: 20px; font-size: 18px; color: #007700; }
+    </style>
+</head>
+<body>
+    <h2>AC/A 比率計算器</h2>
+    <label>遠距離眼位 (Exo 為正, Eso 為負):</label>
+    <input type="number" id="distancePhoria" step="0.01">
+    
+    <label>近距離眼位 (Exo 為正, Eso 為負):</label>
+    <input type="number" id="nearPhoria" step="0.01">
+
+    <label>近距離加數 (例如 +1.00D 輸入 1):</label>
+    <input type="number" id="lensPower" step="0.01">
+
+    <button onclick="calculateACARatio()">計算 AC/A</button>
+
+    <div class="result" id="result"></div>
+
+    <script>
+        function calculateACARatio() {
+            const distancePhoria = parseFloat(document.getElementById("distancePhoria").value);
+            const nearPhoria = parseFloat(document.getElementById("nearPhoria").value);
+            const lensPower = parseFloat(document.getElementById("lensPower").value);
+            const resultDiv = document.getElementById("result");
+
+            if (isNaN(distancePhoria) || isNaN(nearPhoria) || isNaN(lensPower) || lensPower === 0) {
+                resultDiv.textContent = "請輸入有效數值，且加數不能為 0";
+                return;
+            }
+
+            const ac_a = ((nearPhoria - distancePhoria) / lensPower).toFixed(2);
+            resultDiv.textContent = `AC/A 比率為：${ac_a}`;
+        }
+    </script>
+</body>
+</html>
