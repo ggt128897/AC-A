@@ -1,139 +1,179 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>鏡片計算器 & AC/A 計算器</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>視光工具整合頁</title>
   <style>
     body {
       font-family: sans-serif;
-      padding: 20px;
-      max-width: 450px;
+      background-color: #f4f4f4;
+      max-width: 800px;
       margin: auto;
-      background-color: #f2f2f2;
+      padding: 20px;
     }
     h2 {
-      color: #333;
-      margin-top: 30px;
+      margin-top: 40px;
+      color: #0056b3;
     }
-    input, button, label, select {
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+    input, button, select {
       width: 100%;
-      padding: 10px;
-      margin: 8px 0;
+      padding: 8px;
+      margin-top: 4px;
       box-sizing: border-box;
-      font-size: 1em;
     }
     button {
       background-color: #007BFF;
       color: white;
       border: none;
+      margin-top: 15px;
       cursor: pointer;
     }
     button:hover {
       background-color: #0056b3;
     }
-    #result, #acaResult {
+    .section {
+      background-color: #fff;
+      padding: 15px;
+      margin-top: 20px;
+      border-radius: 5px;
+      box-shadow: 0px 0px 5px rgba(0,0,0,0.1);
+    }
+    #result {
       margin-top: 10px;
-      font-size: 1.1em;
       font-weight: bold;
       color: #007BFF;
-    }
-    .hidden {
-      display: none;
-    }
-    footer {
-      margin-top: 40px;
-      text-align: center;
-      font-size: 0.9em;
-      color: #666;
     }
   </style>
 </head>
 <body>
 
-  <!-- 密碼登入 -->
-  <div id="loginArea">
-    <h2>請輸入密碼以繼續</h2>
-    <input type="password" id="passwordInput" placeholder="請輸入密碼">
-    <button onclick="checkPassword()">登入</button>
-    <div id="loginError" style="color: red;"></div>
+  <h1>視光綜合工具</h1>
+
+  <!-- 1. 鏡片最小直徑 -->
+  <div class="section">
+    <h2>鏡片最小直徑計算器</h2>
+    <label>鏡片寬度 (mm)：<input id="lensWidth" type="number" value="52" /></label>
+    <label>鼻橋寬度 (mm)：<input id="bridgeWidth" type="number" value="18" /></label>
+    <label>眼位高度 (mm)：<input id="lensHeight" type="number" value="36" /></label>
+    <label>PD (mm)：<input id="pd" type="number" value="60" /></label>
+    <label>安全邊緣 (mm)：<input id="safetyEdge" type="number" value="2" /></label>
+    <label>校正因子：<input id="correctionFactor" type="number" value="0.95" step="0.01" /></label>
+    <button onclick="calculateMLD()">計算 MLD</button>
+    <div id="mldResult"></div>
   </div>
 
-  <!-- 主內容 -->
-  <div id="mainContent" class="hidden">
-    <h2>鏡片最小直徑計算器</h2>
-    <label>鏡片寬度（mm）<input id="lensWidth" type="number" value="52"></label>
-    <label>鼻橋寬度（mm）<input id="bridgeWidth" type="number" value="18"></label>
-    <label>眼位高度（mm）<input id="lensHeight" type="number" value="36"></label>
-    <label>瞳孔距離 PD（mm）<input id="pd" type="number" value="60"></label>
-    <label>安全邊緣（mm）<input id="safetyEdge" type="number" value="2"></label>
-    <label><input type="checkbox" id="advancedToggle" onchange="toggleAdvanced()"> 開啟進階模式</label>
-    <div id="advancedOptions" class="hidden">
-      <label>校正因子（預設 0.95）<input id="correctionFactor" type="number" value="0.95" step="0.01"></label>
-    </div>
-    <button onclick="calculateMLD()">計算最小鏡片直徑</button>
-    <div id="result"></div>
-
-    <h2>AC/A 比值計算器</h2>
-    <label>遠距離眼位（prism diopters）<input id="distancePhoria" type="number" step="0.1"></label>
-    <label>近距離眼位（prism diopters）<input id="nearPhoria" type="number" step="0.1"></label>
-    <label>近距離測量距離（cm）<input id="nearDistance" type="number" value="40"></label>
+  <!-- 2. AC/A -->
+  <div class="section">
+    <h2>AC/A 比值計算</h2>
+    <label>近距離眼位 (Δ)：<input id="nearPhoria" type="number" /></label>
+    <label>遠距離眼位 (Δ)：<input id="distancePhoria" type="number" /></label>
+    <label>近距離測試距離 (cm)：<input id="nearDistance" type="number" value="40" /></label>
     <button onclick="calculateACA()">計算 AC/A</button>
     <div id="acaResult"></div>
+  </div>
 
-    <footer>
-      製作人：1019Aaron
-    </footer>
+  <!-- 3. NRA/PRA -->
+  <div class="section">
+    <h2>NRA / PRA</h2>
+    <label>NRA (+)：<input id="nra" type="number" step="0.25" /></label>
+    <label>PRA (−)：<input id="pra" type="number" step="0.25" /></label>
+    <button onclick="calculateNRA_PRA()">顯示結果</button>
+    <div id="nraPraResult"></div>
+  </div>
+
+  <!-- 4. 調節幅度 -->
+  <div class="section">
+    <h2>調節幅度</h2>
+    <label>年齡：<input id="age" type="number" /></label>
+    <button onclick="calculateAmplitude()">估算調節幅度</button>
+    <div id="amplitudeResult"></div>
+  </div>
+
+  <!-- 9. 遮眼測試紀錄與 Vergence 分析 -->
+  <div class="section">
+    <h2>遮眼測試與 Vergence 分析</h2>
+    <label>遮眼測試結果描述：<input id="coverTestDesc" type="text" /></label>
+    <label>Vergence 正向範圍（BO）Δ：<input id="vergenceBO" type="number" /></label>
+    <label>Vergence 反向範圍（BI）Δ：<input id="vergenceBI" type="number" /></label>
+    <button onclick="analyzeVergence()">分析 Vergence</button>
+    <div id="vergenceResult"></div>
+  </div>
+
+  <!-- 自動標記與建議 -->
+  <div class="section">
+    <h2>自動標記與臨床建議</h2>
+    <button onclick="generateSuggestions()">產生建議</button>
+    <div id="suggestionResult"></div>
   </div>
 
   <script>
-    function checkPassword() {
-      const input = document.getElementById('passwordInput').value;
-      if (input === 'Aaron') {
-        document.getElementById('loginArea').classList.add('hidden');
-        document.getElementById('mainContent').classList.remove('hidden');
-      } else {
-        document.getElementById('loginError').innerText = '密碼錯誤，請再試一次';
-      }
-    }
-
-    function toggleAdvanced() {
-      const isChecked = document.getElementById('advancedToggle').checked;
-      document.getElementById('advancedOptions').classList.toggle('hidden', !isChecked);
-    }
-
     function calculateMLD() {
       const lensWidth = parseFloat(document.getElementById('lensWidth').value);
       const bridgeWidth = parseFloat(document.getElementById('bridgeWidth').value);
       const lensHeight = parseFloat(document.getElementById('lensHeight').value);
       const pd = parseFloat(document.getElementById('pd').value);
-      const safetyEdge = parseFloat(document.getElementById('safetyEdge').value) || 2;
-      const correctionFactor = document.getElementById('advancedToggle').checked
-        ? parseFloat(document.getElementById('correctionFactor').value)
-        : 0.95;
-
+      const safetyEdge = parseFloat(document.getElementById('safetyEdge').value);
+      const correctionFactor = parseFloat(document.getElementById('correctionFactor').value);
       const gc = (lensWidth + bridgeWidth) / 2;
       const decentration = Math.abs((pd / 2) - gc);
       const diagonal = Math.sqrt(lensWidth ** 2 + lensHeight ** 2);
       const ed = diagonal * correctionFactor;
       const mld = 2 * decentration + ed + safetyEdge;
-
-      document.getElementById('result').innerText = `最小鏡片直徑：${mld.toFixed(2)} mm`;
+      document.getElementById('mldResult').innerText = `MLD：${mld.toFixed(2)} mm`;
     }
 
     function calculateACA() {
-      const distance = parseFloat(document.getElementById('distancePhoria').value);
       const near = parseFloat(document.getElementById('nearPhoria').value);
-      const nearDist = parseFloat(document.getElementById('nearDistance').value);
+      const dist = parseFloat(document.getElementById('distancePhoria').value);
+      const d = parseFloat(document.getElementById('nearDistance').value) / 100;
+      const result = (near - dist) / d;
+      document.getElementById('acaResult').innerText = `AC/A 比值：${result.toFixed(2)}`;
+    }
 
-      if (isNaN(distance) || isNaN(near) || isNaN(nearDist) || nearDist === 0) {
-        document.getElementById('acaResult').innerText = '請確認輸入正確的數值';
-        return;
+    function calculateNRA_PRA() {
+      const nra = parseFloat(document.getElementById('nra').value);
+      const pra = parseFloat(document.getElementById('pra').value);
+      document.getElementById('nraPraResult').innerText = `NRA：+${nra} D, PRA：-${pra} D`;
+    }
+
+    function calculateAmplitude() {
+      const age = parseInt(document.getElementById('age').value);
+      const amp = 18.5 - 0.3 * age;
+      document.getElementById('amplitudeResult').innerText = `預估調節幅度：約 ${amp.toFixed(2)} D`;
+    }
+
+    function analyzeVergence() {
+      const bo = parseFloat(document.getElementById('vergenceBO').value);
+      const bi = parseFloat(document.getElementById('vergenceBI').value);
+      let result = `BO: ${bo}Δ, BI: ${bi}Δ。`;
+      if (bo < 12 || bi < 6) result += " Vergence 可能不足。";
+      else result += " Vergence 正常。";
+      document.getElementById('vergenceResult').innerText = result;
+    }
+
+    function generateSuggestions() {
+      const age = parseInt(document.getElementById('age').value) || 0;
+      const amp = 18.5 - 0.3 * age;
+      let suggestion = "";
+
+      if (amp < 5) suggestion += "調節能力偏低，建議檢查老花或視覺疲勞。\n";
+      const bo = parseFloat(document.getElementById('vergenceBO').value) || 0;
+      const bi = parseFloat(document.getElementById('vergenceBI').value) || 0;
+
+      if (bo < 12 || bi < 6) suggestion += "Vergence 範圍偏低，考慮視覺訓練。\n";
+      const coverTest = document.getElementById('coverTestDesc').value;
+      if (coverTest.includes("外斜") || coverTest.includes("間歇")) {
+        suggestion += "建議詳細追蹤斜視狀況與控制力評估。\n";
       }
 
-      const aca = (near - distance) / (1 / (nearDist / 100));
-      document.getElementById('acaResult').innerText = `AC/A 比值：約 ${aca.toFixed(2)} Δ/D`;
+      document.getElementById('suggestionResult').innerText = suggestion || "目前無特別異常建議。";
     }
   </script>
+
 </body>
 </html>
