@@ -1,46 +1,139 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <title>AC/A 比率計算器</title>
-    <style>
-        body { font-family: Arial, sans-serif; padding: 20px; background: #f7f7f7; }
-        h2 { color: #333; }
-        input, button { padding: 10px; font-size: 16px; margin: 8px 0; width: 100%; }
-        button { background: #0066cc; color: white; border: none; }
-        .result { margin-top: 20px; font-size: 18px; color: #007700; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>鏡片計算器 & AC/A 計算器</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      max-width: 450px;
+      margin: auto;
+      background-color: #f2f2f2;
+    }
+    h2 {
+      color: #333;
+      margin-top: 30px;
+    }
+    input, button, label, select {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      box-sizing: border-box;
+      font-size: 1em;
+    }
+    button {
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #result, #acaResult {
+      margin-top: 10px;
+      font-size: 1.1em;
+      font-weight: bold;
+      color: #007BFF;
+    }
+    .hidden {
+      display: none;
+    }
+    footer {
+      margin-top: 40px;
+      text-align: center;
+      font-size: 0.9em;
+      color: #666;
+    }
+  </style>
 </head>
 <body>
-    <h2>AC/A 比率計算器</h2>
-    <label>遠距離眼位 (Exo 為正, Eso 為負):</label>
-    <input type="number" id="distancePhoria" step="0.01">
-    
-    <label>近距離眼位 (Exo 為正, Eso 為負):</label>
-    <input type="number" id="nearPhoria" step="0.01">
 
-    <label>近距離加數 (例如 +1.00D 輸入 1):</label>
-    <input type="number" id="lensPower" step="0.01">
+  <!-- 密碼登入 -->
+  <div id="loginArea">
+    <h2>請輸入密碼以繼續</h2>
+    <input type="password" id="passwordInput" placeholder="請輸入密碼">
+    <button onclick="checkPassword()">登入</button>
+    <div id="loginError" style="color: red;"></div>
+  </div>
 
-    <button onclick="calculateACARatio()">計算 AC/A</button>
+  <!-- 主內容 -->
+  <div id="mainContent" class="hidden">
+    <h2>鏡片最小直徑計算器</h2>
+    <label>鏡片寬度（mm）<input id="lensWidth" type="number" value="52"></label>
+    <label>鼻橋寬度（mm）<input id="bridgeWidth" type="number" value="18"></label>
+    <label>眼位高度（mm）<input id="lensHeight" type="number" value="36"></label>
+    <label>瞳孔距離 PD（mm）<input id="pd" type="number" value="60"></label>
+    <label>安全邊緣（mm）<input id="safetyEdge" type="number" value="2"></label>
+    <label><input type="checkbox" id="advancedToggle" onchange="toggleAdvanced()"> 開啟進階模式</label>
+    <div id="advancedOptions" class="hidden">
+      <label>校正因子（預設 0.95）<input id="correctionFactor" type="number" value="0.95" step="0.01"></label>
+    </div>
+    <button onclick="calculateMLD()">計算最小鏡片直徑</button>
+    <div id="result"></div>
 
-    <div class="result" id="result"></div>
+    <h2>AC/A 比值計算器</h2>
+    <label>遠距離眼位（prism diopters）<input id="distancePhoria" type="number" step="0.1"></label>
+    <label>近距離眼位（prism diopters）<input id="nearPhoria" type="number" step="0.1"></label>
+    <label>近距離測量距離（cm）<input id="nearDistance" type="number" value="40"></label>
+    <button onclick="calculateACA()">計算 AC/A</button>
+    <div id="acaResult"></div>
 
-    <script>
-        function calculateACARatio() {
-            const distancePhoria = parseFloat(document.getElementById("distancePhoria").value);
-            const nearPhoria = parseFloat(document.getElementById("nearPhoria").value);
-            const lensPower = parseFloat(document.getElementById("lensPower").value);
-            const resultDiv = document.getElementById("result");
+    <footer>
+      製作人：1019Aaron
+    </footer>
+  </div>
 
-            if (isNaN(distancePhoria) || isNaN(nearPhoria) || isNaN(lensPower) || lensPower === 0) {
-                resultDiv.textContent = "請輸入有效數值，且加數不能為 0";
-                return;
-            }
+  <script>
+    function checkPassword() {
+      const input = document.getElementById('passwordInput').value;
+      if (input === 'Aaron') {
+        document.getElementById('loginArea').classList.add('hidden');
+        document.getElementById('mainContent').classList.remove('hidden');
+      } else {
+        document.getElementById('loginError').innerText = '密碼錯誤，請再試一次';
+      }
+    }
 
-            const ac_a = ((nearPhoria - distancePhoria) / lensPower).toFixed(2);
-            resultDiv.textContent = `AC/A 比率為：${ac_a}`;
-        }
-    </script>
+    function toggleAdvanced() {
+      const isChecked = document.getElementById('advancedToggle').checked;
+      document.getElementById('advancedOptions').classList.toggle('hidden', !isChecked);
+    }
+
+    function calculateMLD() {
+      const lensWidth = parseFloat(document.getElementById('lensWidth').value);
+      const bridgeWidth = parseFloat(document.getElementById('bridgeWidth').value);
+      const lensHeight = parseFloat(document.getElementById('lensHeight').value);
+      const pd = parseFloat(document.getElementById('pd').value);
+      const safetyEdge = parseFloat(document.getElementById('safetyEdge').value) || 2;
+      const correctionFactor = document.getElementById('advancedToggle').checked
+        ? parseFloat(document.getElementById('correctionFactor').value)
+        : 0.95;
+
+      const gc = (lensWidth + bridgeWidth) / 2;
+      const decentration = Math.abs((pd / 2) - gc);
+      const diagonal = Math.sqrt(lensWidth ** 2 + lensHeight ** 2);
+      const ed = diagonal * correctionFactor;
+      const mld = 2 * decentration + ed + safetyEdge;
+
+      document.getElementById('result').innerText = `最小鏡片直徑：${mld.toFixed(2)} mm`;
+    }
+
+    function calculateACA() {
+      const distance = parseFloat(document.getElementById('distancePhoria').value);
+      const near = parseFloat(document.getElementById('nearPhoria').value);
+      const nearDist = parseFloat(document.getElementById('nearDistance').value);
+
+      if (isNaN(distance) || isNaN(near) || isNaN(nearDist) || nearDist === 0) {
+        document.getElementById('acaResult').innerText = '請確認輸入正確的數值';
+        return;
+      }
+
+      const aca = (near - distance) / (1 / (nearDist / 100));
+      document.getElementById('acaResult').innerText = `AC/A 比值：約 ${aca.toFixed(2)} Δ/D`;
+    }
+  </script>
 </body>
 </html>
